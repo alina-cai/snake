@@ -6,5 +6,5 @@ Model training to automatically play a simple snake game.
 
 Played by me :)
 
-https://github.com/alina-cai/snake-ai/assets/117325741/11a4ab86-dd83-4d97-a6c1-1a6622960374
+https://github.com/alina-cai/snake-ai/assets/117325741/c34e69ec-1c0d-4ad6-9e97-d45978c3d50e
 
