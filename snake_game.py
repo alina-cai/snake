@@ -22,7 +22,7 @@ fps = pygame.time.Clock()
 
 wall_start = window_x // 4
 wall_end = window_x * 3 // 4
-wall = [[x, window_y // 2] for x in range(wall_start, wall_end, 20)]
+wall = {(x, window_y // 2) for x in range(wall_start, wall_end, 20)}
 
 snake_position = [100, 60]
 
@@ -47,18 +47,50 @@ def show_score(choice, color, font, size):
 	score_rect = score_surface.get_rect()
 	game_window.blit(score_surface, score_rect)
 
-def game_over():
+def game_over():    
+    for index, pos in enumerate(snake_body):
+        if index == 1:
+            pygame.draw.rect(game_window, blue, pygame.Rect(pos[0], pos[1], 20, 20))
+            pygame.draw.rect(game_window, white, pygame.Rect(pos[0], pos[1], 20, 20), 2) 
+
+            if direction == 'UP':
+                pygame.draw.line(game_window, red, (pos[0]+5, pos[1]+7), (pos[0]+7, pos[1]+9), 1)
+                pygame.draw.line(game_window, red, (pos[0]+7, pos[1]+7), (pos[0]+5, pos[1]+9), 1)
+
+                pygame.draw.line(game_window, red, (pos[0]+12, pos[1]+7), (pos[0]+14, pos[1]+9), 1)
+                pygame.draw.line(game_window, red, (pos[0]+14, pos[1]+7), (pos[0]+12, pos[1]+9), 1)
+            elif direction == 'DOWN':
+                pygame.draw.line(game_window, red, (pos[0]+5, pos[1]+12), (pos[0]+7, pos[1]+14), 1)
+                pygame.draw.line(game_window, red, (pos[0]+7, pos[1]+12), (pos[0]+5, pos[1]+14), 1)
+
+                pygame.draw.line(game_window, red, (pos[0]+12, pos[1]+12), (pos[0]+14, pos[1]+14), 1)
+                pygame.draw.line(game_window, red, (pos[0]+14, pos[1]+12), (pos[0]+12, pos[1]+14), 1)
+            elif direction == 'LEFT':
+                pygame.draw.line(game_window, red, (pos[0]+7, pos[1]+5), (pos[0]+9, pos[1]+7), 1)
+                pygame.draw.line(game_window, red, (pos[0]+9, pos[1]+5), (pos[0]+7, pos[1]+7), 1)
+
+                pygame.draw.line(game_window, red, (pos[0]+7, pos[1]+12), (pos[0]+9, pos[1]+14), 1)
+                pygame.draw.line(game_window, red, (pos[0]+9, pos[1]+12), (pos[0]+7, pos[1]+14), 1)
+            elif direction == 'RIGHT':
+                pygame.draw.line(game_window, red, (pos[0]+12, pos[1]+5), (pos[0]+14, pos[1]+7), 1)
+                pygame.draw.line(game_window, red, (pos[0]+14, pos[1]+5), (pos[0]+12, pos[1]+7), 1)
+
+                pygame.draw.line(game_window, red, (pos[0]+12, pos[1]+12), (pos[0]+14, pos[1]+14), 1)
+                pygame.draw.line(game_window, red, (pos[0]+14, pos[1]+12), (pos[0]+12, pos[1]+14), 1)
+       
+    pygame.display.update()
+    time.sleep(1)
+
     my_font = pygame.font.SysFont('microsoftjhenghei', 50)
     game_over_surface = my_font.render('your score is: ' + str(score), True, white)
     game_over_rect = game_over_surface.get_rect()
     game_over_rect.midtop = (window_x/2, window_y/4)
     game_window.blit(game_over_surface, game_over_rect)
-    
+
     pygame.display.flip()
     time.sleep(2)
     pygame.quit()
     quit()
-
 
 while True:
     for event in pygame.event.get():
@@ -84,7 +116,7 @@ while True:
         direction = 'LEFT'
     if change_to == 'RIGHT' and direction != 'LEFT':
         direction = 'RIGHT'
-        
+    
     if direction == 'UP':
         snake_position[1] -= 20
     if direction == 'DOWN':
@@ -101,11 +133,11 @@ while True:
     if snake_position[1] < 0 or snake_position[1] > window_y-10:
         game_over()
 
-    for block in snake_body[1:]:
+    for block in wall:
         if snake_position[0] == block[0] and snake_position[1] == block[1]:
             game_over()
-    
-    for block in wall:
+
+    for block in snake_body[1:]:
         if snake_position[0] == block[0] and snake_position[1] == block[1]:
             game_over()
 
@@ -117,11 +149,27 @@ while True:
 
     if not fruit_spawn:
         while True:
-            fruit_position = [random.randrange(1, (window_x//20)) * 20,
-                            random.randrange(1, (window_y//20)) * 20]
-            if fruit_position not in wall: 
-                fruit_spawn = True
-                break
+            fruit_position = [random.randrange(1, (window_x // 20)) * 20,
+                            random.randrange(1, (window_y // 20)) * 20]
+
+            collision = False
+            for segment in wall:
+                if fruit_position[0] == segment[0] and fruit_position[1] == segment[1]:
+                    collision = True
+                    break
+
+            if not collision:
+                overlap = False
+                for block in snake_body:
+                    if fruit_position[0] == block[0] and fruit_position[1] == block[1]:
+                        overlap = True
+                        break
+
+                if not overlap:
+                    fruit_spawn = True
+                    break
+
+
 
     for x in range(0, window_x, 20):
         for y in range(0, window_y, 20):
@@ -136,22 +184,22 @@ while True:
 
         if index == 0:  
             if direction == 'UP':
-                pygame.draw.rect(game_window, black, pygame.Rect(pos[0] + 5, pos[1] + 15, 3, 3))  
-                pygame.draw.rect(game_window, black, pygame.Rect(pos[0] + 12, pos[1] + 15, 3, 3)) 
-                pygame.draw.rect(game_window, red, pygame.Rect(pos[0] + 9, pos[1], 2, 5)) 
+                pygame.draw.rect(game_window, black, pygame.Rect(pos[0] + 5, pos[1] + 7, 3, 3))  
+                pygame.draw.rect(game_window, black, pygame.Rect(pos[0] + 12, pos[1] + 7, 3, 3)) 
+                pygame.draw.rect(game_window, red, pygame.Rect(pos[0] + 9, pos[1] - 5, 2, 5)) 
             elif direction == 'DOWN':
-                pygame.draw.rect(game_window, black, pygame.Rect(pos[0] + 5, pos[1] + 5, 3, 3))  
-                pygame.draw.rect(game_window, black, pygame.Rect(pos[0] + 12, pos[1] + 5, 3, 3)) 
-                pygame.draw.rect(game_window, red, pygame.Rect(pos[0] + 9, pos[1] + 15, 2, 5)) 
+                pygame.draw.rect(game_window, black, pygame.Rect(pos[0] + 5, pos[1] + 12, 3, 3))  
+                pygame.draw.rect(game_window, black, pygame.Rect(pos[0] + 12, pos[1] + 12, 3, 3)) 
+                pygame.draw.rect(game_window, red, pygame.Rect(pos[0] + 9, pos[1] + 20, 2, 5)) 
             elif direction == 'LEFT':
-                pygame.draw.rect(game_window, black, pygame.Rect(pos[0] + 15, pos[1] + 5, 3, 3))  
-                pygame.draw.rect(game_window, black, pygame.Rect(pos[0] + 15, pos[1] + 12, 3, 3)) 
-                pygame.draw.rect(game_window, red, pygame.Rect(pos[0], pos[1] + 9, 5, 2)) 
-            elif direction == 'RIGHT':
                 pygame.draw.rect(game_window, black, pygame.Rect(pos[0] + 5, pos[1] + 5, 3, 3))  
                 pygame.draw.rect(game_window, black, pygame.Rect(pos[0] + 5, pos[1] + 12, 3, 3)) 
-                pygame.draw.rect(game_window, red, pygame.Rect(pos[0] + 15, pos[1] + 9, 5, 2)) 
-    
+                pygame.draw.rect(game_window, red, pygame.Rect(pos[0] - 5, pos[1] + 9, 5, 2)) 
+            elif direction == 'RIGHT':
+                pygame.draw.rect(game_window, black, pygame.Rect(pos[0] + 12, pos[1] + 5, 3, 3))  
+                pygame.draw.rect(game_window, black, pygame.Rect(pos[0] + 12, pos[1] + 12, 3, 3)) 
+                pygame.draw.rect(game_window, red, pygame.Rect(pos[0] + 20, pos[1] + 9, 5, 2))
+
     pygame.draw.circle(game_window, red, [fruit_position[0] + 10, fruit_position[1] + 10], 10)
     pygame.draw.rect(game_window, black, pygame.Rect(fruit_position[0] + 9, fruit_position[1], 2, 5))
             
