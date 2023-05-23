@@ -5,7 +5,7 @@ import random
 snake_speed = 15
 
 window_x = 720
-window_y = 480
+window_y = 500
 
 black = pygame.Color(1, 1, 43)
 blue = pygame.Color(5, 217, 232)
@@ -20,21 +20,19 @@ game_window = pygame.display.set_mode((window_x, window_y))
 
 fps = pygame.time.Clock()
 
-wall_start = window_x // 4
-wall_end = window_x * 3 // 4
-wall = {(x, window_y // 2) for x in range(wall_start, wall_end, 20)}
+wall = [[x, 240] for x in range(180, 540, 20)]
 
 snake_position = [100, 60]
 
 snake_body = [[100, 60],
-			[80, 60],
-			[60, 60],
-			[40, 60]]
+              [80, 60],
+              [60, 60],
+              [40, 60]]
 
-fruit_position = [random.randrange(1, (window_x//20)) * 20,
+apple_position = [random.randrange(1, (window_x//20)) * 20,
 				random.randrange(1, (window_y//20)) * 20]
 
-fruit_spawn = True
+apple_spawn = True
 
 direction = 'RIGHT'
 change_to = direction
@@ -141,35 +139,28 @@ while True:
         if snake_position[0] == block[0] and snake_position[1] == block[1]:
             game_over()
 
-    if (abs(snake_position[0] - fruit_position[0]) < 20) and (abs(snake_position[1] - fruit_position[1]) < 20):
+    if (abs(snake_position[0] - apple_position[0]) < 20) and (abs(snake_position[1] - apple_position[1]) < 20):
         score += 1
-        fruit_spawn = False
+        apple_spawn = False
     else:
         snake_body.pop()
-
-    if not fruit_spawn:
+        
+    if not apple_spawn:
         while True:
-            fruit_position = [random.randrange(1, (window_x // 20)) * 20,
-                            random.randrange(1, (window_y // 20)) * 20]
+            apple_x_options = list(range(20, 160, 20)) + list(range(560, window_x - 20, 20))
+            apple_position_x = random.choice(apple_x_options)
+                
+            apple_y_options = list(range(20, 220, 20)) + list(range(260, window_y - 20, 20))
+            apple_position_y = random.choice(apple_y_options)
 
-            collision = False
-            for segment in wall:
-                if fruit_position[0] == segment[0] and fruit_position[1] == segment[1]:
-                    collision = True
-                    break
+            apple_position = [apple_position_x, apple_position_y]
+            
+            if any(ap == wp for wp in wall for ap in apple_position) or any(ap == sb for sb in snake_body for ap in apple_position):
+                continue
+            else:
+                break
 
-            if not collision:
-                overlap = False
-                for block in snake_body:
-                    if fruit_position[0] == block[0] and fruit_position[1] == block[1]:
-                        overlap = True
-                        break
-
-                if not overlap:
-                    fruit_spawn = True
-                    break
-
-
+    apple_spawn = True
 
     for x in range(0, window_x, 20):
         for y in range(0, window_y, 20):
@@ -200,10 +191,10 @@ while True:
                 pygame.draw.rect(game_window, black, pygame.Rect(pos[0] + 12, pos[1] + 12, 3, 3)) 
                 pygame.draw.rect(game_window, red, pygame.Rect(pos[0] + 20, pos[1] + 9, 5, 2))
 
-    pygame.draw.circle(game_window, red, [fruit_position[0] + 10, fruit_position[1] + 10], 10)
-    pygame.draw.rect(game_window, black, pygame.Rect(fruit_position[0] + 9, fruit_position[1], 2, 5))
+    pygame.draw.circle(game_window, red, [apple_position[0] + 10, apple_position[1] + 10], 10)
+    pygame.draw.rect(game_window, black, pygame.Rect(apple_position[0] + 9, apple_position[1], 2, 5))
             
-    show_score(1, white, 'microsoftjhenghei', 50)
+    show_score(1, white, 'microsoftjhenghei', 30)
     
     pygame.display.update()
     
